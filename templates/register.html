@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head><title>Đăng ký</title></head>
+<body>
+    <h2>Đăng ký</h2>
+    {% if error %}<p style="color:red">{{ error }}</p>{% endif %}
+    <form method="post">
+        <input name="username" placeholder="Tên đăng nhập" required>
+        <input name="password" type="password" placeholder="Mật khẩu" required>
+        <button type="submit">Đăng ký</button>
+    </form>
+    <a href="{{ url_for('auth.login') }}">Đăng nhập</a>
+</body>
+</html>

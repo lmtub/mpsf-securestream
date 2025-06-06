@@ -1,0 +1,18 @@
+{
+  "user": {
+    "password": "scrypt:32768:8:1$4EqnONawlU6FdHfL$4a16ff2c3b9bbd4e1e27f210573529beceea71a522405b0d2281e4c2e52080d2c6aac84d2e4575cdf07d348ccaa5cf11cf6ac91933fc4d038fc7af4e0f83f6e4",
+    "role": "user"
+  },
+  "admin": {
+    "password": "scrypt:32768:8:1$RIhOcwu3SqLrv0ns$5568c19a9650b01cca5f91e5fd35d514656b03f096deca00d3a44e0106f279e778f5c423b8bf169670c052a0d43a9c01aabd7acb2d58c9749ead106fbd5bedf6",
+    "role": "admin"
+  },
+  "creator": {
+    "password": "scrypt:32768:8:1$bjM1J4do0BE0nWnB$2aba659b40a52988e0ba6685cd0cd246b1fdac4aba629ea3e72bd160ffdfa939a927451743e9b06b89e4d4443d7aef5e660ef31713daec2637ea4cd01974a33a",
+    "role": "creator"
+  },
+  "premium": {
+    "password": "scrypt:32768:8:1$3hedoctI6ONGGg1F$896ceb31ad1bc8df8be5f2e7f2e3349e327a6075e827cb2a71494f84295cfd4be70bb16aa5c6ae26b867cb05892c5f60b4bf4f53012702a9dd91d1a830951a39",
+    "role": "premium"
+  }
+}

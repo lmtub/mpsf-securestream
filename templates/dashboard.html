@@ -1,0 +1,80 @@
+<!-- templates/dashboard.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SecureStream Dashboard</title>
+</head>
+<body>
+    <h2>🎬 Welcome, {{ username }}!</h2>
+    <p>Role: <strong>{{ role }}</strong></p>
+
+    {% if role == 'user' %}
+        <h3>📺 Public Videos</h3>
+        <ul>
+            {% for f in public_files %}
+        <li>
+            {{ f }}
+            <a href="{{ url_for('stream.play_video', filename=f) }}">Play</a>
+        </li>
+    {% endfor %}
+        </ul>
+    {% elif role == 'premium' %}
+        <h3>📺 Public Videos</h3>
+        {% for f in public_files %}
+        <li>
+            {{ f }}
+            <a href="{{ url_for('stream.play_video', filename=f) }}">Play</a>
+        </li>
+    {% endfor %}
+        <h3>💎 Premium Videos</h3>
+        <ul>
+            {% for f in premium_files %}
+                <li>
+                    {{ f }}
+                    <a href="{{ url_for('stream.play_video', filename=f) }}">Play</a>
+                </li>
+            {% else %}
+                <li>No premium videos.</li>
+            {% endfor %}
+        </ul>
+    {% elif role == 'creator' %}
+        <h3>📤 Upload Your Content</h3>
+        <form action="/creator/upload" method="post" enctype="multipart/form-data">
+            <input type="file" name="file">
+            <input type="submit" value="Upload">
+        </form>
+        <h4>📄 My Uploaded Files:</h4>
+        <ul id="my-content">
+            {% for f in uploaded_files %}
+                <li>{{ f }}</li>
+            {% else %}
+                <li>No files uploaded yet.</li>
+            {% endfor %}
+        </ul>
+    {% elif role == 'admin' %}
+        <h3>🛠️ Admin Panel</h3>
+        <h4>📂 Pending Content</h4>
+        <ul id="pending-list">
+            {% for filename in pending_files %}
+                <li>
+                    {{ filename }}
+                    <form action="/admin/approve/{{ filename }}" method="post" style="display:inline;">
+                        <select name="access">
+                            <option value="public">Public</option>
+                            <option value="premium">Premium</option>
+                        </select>
+                        <input type="hidden" name="approved_by" value="{{ username }}">
+                        <input type="submit" value="Approve">
+                    </form>
+                </li>
+            {% else %}
+                <li>No pending files</li>
+            {% endfor %}
+        </ul>
+        <h4>📜 Access Logs</h4>
+        <a href="/admin/logs">View access.log</a>
+    {% endif %}
+    <a href="{{ url_for('auth.logout') }}" class="btn btn-danger" style="float:right;">Đăng xuất</a>
+</body>
+</html>
