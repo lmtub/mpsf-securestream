@@ -11,6 +11,24 @@ import threading
 import time
 import mimetypes
 
+from functools import wraps
+from flask import request, jsonify
+
+def require_jwt(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        token = None
+        auth_header = request.headers.get("Authorization")
+        if auth_header and auth_header.startswith("Bearer "):
+            token = auth_header.split(" ")[1]
+        else:
+            token = request.cookies.get("token")
+        if not token:
+            return jsonify({"error": "Missing or invalid JWT"}), 401
+        # Có thể kiểm tra thêm verify_jwt(token) ở đây nếu muốn
+        return f(*args, **kwargs)
+    return decorated_function
+
 def get_mimetype(filename):
     mimetype, _ = mimetypes.guess_type(filename)
     return mimetype or "application/octet-stream"
@@ -76,6 +94,7 @@ def encrypt_upload():
     })
 
 @stream_bp.route("/download/<filename>", methods=["GET"])
+@require_jwt
 def download_decrypt(filename):
     # Lấy JWT từ header hoặc cookie
     auth_header = request.headers.get("Authorization")
@@ -168,5 +187,6 @@ def download_decrypt(filename):
     return send_file(dec_path, mimetype=get_mimetype(filename), as_attachment=False)
 
 @stream_bp.route("/play/<filename>")
+@require_jwt
 def play_video(filename):
     return render_template("player.html", filename=filename)
