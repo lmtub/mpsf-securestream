@@ -77,4 +77,22 @@
     {% endif %}
     <a href="{{ url_for('auth.logout') }}" class="btn btn-danger" style="float:right;">Đăng xuất</a>
 </body>
+<script>
+    document.querySelector('form[action="/creator/upload"]').onsubmit = async function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        const res = await fetch("/creator/upload", {
+            method: "POST",
+            body: formData
+        });
+        if (res.redirected) {
+            window.location = res.url;
+            return;
+        }
+        const data = await res.json();
+        if (data.error) {
+            alert(data.error); // Cửa sổ nổi báo lỗi
+        }
+    };
+    </script>
 </html>

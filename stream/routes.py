@@ -155,7 +155,7 @@ def download_decrypt(filename):
     def cleanup(response):
         def delayed_delete(path):
             try:
-                time.sleep(10)  # chờ 5 giây để chắc chắn file đã stream xong
+                time.sleep(120)  # chờ 5 giây để chắc chắn file đã stream xong
                 if os.path.exists(path):
                     os.remove(path)
                     print(f"[CLEANUP] Deleted: {path}")
