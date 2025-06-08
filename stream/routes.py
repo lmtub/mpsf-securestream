@@ -1,4 +1,4 @@
-from flask import Blueprint, request, send_file, jsonify, current_app
+from flask import Blueprint, request, send_file, jsonify, current_app, after_this_request
 import os
 import json
 import base64
@@ -147,9 +147,17 @@ def download_decrypt(filename):
 
     if not os.path.exists(dec_path):
         return jsonify({"error": "Decryption failed or output file missing"}), 500
-
+    
     # Ghi log và gửi file
     log_access(username, filename)
+    @after_this_request
+    def cleanup(response):
+        try:
+            if os.path.exists(dec_path):
+                os.remove(dec_path)
+        except Exception:
+            pass
+        return response
     return send_file(dec_path, mimetype=get_mimetype(filename), as_attachment=False)
 
 @stream_bp.route("/play/<filename>")
