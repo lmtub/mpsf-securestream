@@ -7,7 +7,8 @@ from datetime import datetime
 from flask import render_template
 from crypto.utils import encrypt_key_with_master
 from crypto.aes_engine import encrypt_file, generate_aes_key, decrypt_file, decrypt_key_with_master
-
+import threading
+import time
 import mimetypes
 
 def get_mimetype(filename):
@@ -147,17 +148,23 @@ def download_decrypt(filename):
 
     if not os.path.exists(dec_path):
         return jsonify({"error": "Decryption failed or output file missing"}), 500
-    
     # Ghi log và gửi file
     log_access(username, filename)
+
     @after_this_request
     def cleanup(response):
-        try:
-            if os.path.exists(dec_path):
-                os.remove(dec_path)
-        except Exception:
-            pass
+        def delayed_delete(path):
+            try:
+                time.sleep(10)  # chờ 5 giây để chắc chắn file đã stream xong
+                if os.path.exists(path):
+                    os.remove(path)
+                    print(f"[CLEANUP] Deleted: {path}")
+            except Exception as e:
+                print(f"[CLEANUP ERROR] {e}")
+
+        threading.Thread(target=delayed_delete, args=(dec_path,)).start()
         return response
+
     return send_file(dec_path, mimetype=get_mimetype(filename), as_attachment=False)
 
 @stream_bp.route("/play/<filename>")
