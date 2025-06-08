@@ -4,7 +4,7 @@ import base64
 import json
 import os
 import base64
-MASTER_KEY = b'mpsf-master-key'
+MASTER_KEY = b'mpsf-master-key12345678901234567'
 
 # Sinh khóa AES ngẫu nhiên 256-bit (32 bytes)
 def generate_aes_key():
