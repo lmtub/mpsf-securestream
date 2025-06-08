@@ -3,12 +3,12 @@ from Crypto.Random import get_random_bytes
 import base64
 import json
 import os
-
+import base64
 MASTER_KEY = b'mpsf-master-key'
 
 # Sinh khóa AES ngẫu nhiên 256-bit (32 bytes)
 def generate_aes_key():
-    return get_random_bytes(32)  # 256-bit
+    return get_random_bytes(32)
 
 # Mã hóa file sử dụng AES-GCM
 def encrypt_file(input_file_path, output_file_path, key):
@@ -57,6 +57,26 @@ def decrypt_file(encrypted_file_path, output_file_path, key):
     except Exception as e:
         print(f"[❌] Decryption failed: {e}")
         raise
+from Crypto.Cipher import AES
+import base64
+
+# Mã hóa khóa AES phiên bằng master key
+def encrypt_key_with_master(aes_key):
+    cipher = AES.new(MASTER_KEY, AES.MODE_EAX)
+    nonce = cipher.nonce
+    ciphertext, tag = cipher.encrypt_and_digest(aes_key)
+    # Lưu nonce, tag, ciphertext (nối lại hoặc dùng dict)
+    return base64.b64encode(nonce + tag + ciphertext).decode()
+
+# Giải mã khóa AES phiên bằng master key
+def decrypt_key_with_master(enc_data_b64):
+    enc_data = base64.b64decode(enc_data_b64)
+    nonce = enc_data[:16]
+    tag = enc_data[16:32]
+    ciphertext = enc_data[32:]
+    cipher = AES.new(MASTER_KEY, AES.MODE_EAX, nonce=nonce)
+    aes_key = cipher.decrypt_and_verify(ciphertext, tag)
+    return aes_key
 
 # Mã hóa nội dung file và trả về dữ liệu mã hóa (dùng cho stream)
 def encrypt_bytes(data, key):

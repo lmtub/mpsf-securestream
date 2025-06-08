@@ -6,7 +6,7 @@ import jwt
 from datetime import datetime  
 from flask import render_template
 from crypto.utils import encrypt_key_with_master
-from crypto.aes_engine import encrypt_file, generate_aes_key, decrypt_file
+from crypto.aes_engine import encrypt_file, generate_aes_key, decrypt_file, decrypt_key_with_master
 
 import mimetypes
 
@@ -128,7 +128,8 @@ def download_decrypt(filename):
     if key_id not in keys_data:
         return jsonify({"error": f"Key for file '{key_id}' not found"}), 404
 
-    key = base64.b64decode(keys_data[key_id])
+    encrypted_key_str = keys_data[key_id]
+    key = decrypt_key_with_master(encrypted_key_str)
 
     # Giải mã file
     enc_path = os.path.join("storage", "encrypted_media", "enc_" + filename)

@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify, redirect, url_for
 import os
 from werkzeug.utils import secure_filename
-from crypto.aes_engine import encrypt_file, generate_aes_key
+from crypto.aes_engine import encrypt_file, generate_aes_key, encrypt_key_with_master
 import base64
 import json
 from datetime import datetime
@@ -29,11 +29,12 @@ def upload_file():
 
     key = generate_aes_key()
     output_path = os.path.join(UPLOAD_DIR, "enc_" + filename)
-    encrypt_info = encrypt_file(input_path, output_path, key)
+    encrypt_file(input_path, output_path, key)
+    encrypted_key_str = encrypt_key_with_master(key)
 
     with open(KEY_FILE, "r") as f:
         keys_data = json.load(f) if os.path.getsize(KEY_FILE) > 0 else {}
-    keys_data["enc_" + filename] = base64.b64encode(key).decode()
+    keys_data["enc_" + filename] = encrypted_key_str
     with open(KEY_FILE, "w") as f:
         json.dump(keys_data, f, indent=2)
 
