@@ -42,7 +42,7 @@ def login():
 
         # ✅ Tạo response và set cookie chứa JWT
         resp = make_response(redirect(url_for("auth.dashboard")))
-        resp.set_cookie("token", token, httponly=False, max_age=3600)
+        resp.set_cookie("token", token, httponly=True, secure=False, samesite="Strict", max_age=3600)
         return resp
 
     return render_template("login.html")
