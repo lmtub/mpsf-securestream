@@ -5,12 +5,6 @@ from datetime import datetime
 
 admin_bp = Blueprint("admin", __name__)
 
-CONTENT_ACCESS_FILE = os.path.join("storage", "content_access.json")
-os.makedirs("storage", exist_ok=True)
-if not os.path.exists(CONTENT_ACCESS_FILE):
-    with open(CONTENT_ACCESS_FILE, "w") as f:
-        json.dump({}, f)
-
 @admin_bp.route("/approve/<filename>", methods=["POST"])
 def approve_content(filename):
     access = request.form.get("access")  # "public" hoặc "premium"

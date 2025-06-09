@@ -1,8 +1,11 @@
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
 from datetime import datetime, timedelta
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
-SECRET_KEY = "mpsf-secret-key09876543211234567"
+SECRET_KEY = os.environ.get("SECRET_KEY")
 
 def hash_password(password):
     return generate_password_hash(password)

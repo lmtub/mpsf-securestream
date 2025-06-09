@@ -9,7 +9,8 @@ from crypto.aes_engine import encrypt_file, generate_aes_key, decrypt_file, decr
 import threading
 import time
 import mimetypes
-
+from dotenv import load_dotenv
+load_dotenv()
 from functools import wraps
 from flask import request, jsonify
 
@@ -34,7 +35,7 @@ def get_mimetype(filename):
 
 stream_bp = Blueprint("stream", __name__)
 
-SECRET_KEY = "mpsf-secret-key09876543211234567"
+SECRET_KEY = os.environ.get("SECRET_KEY")
 
 def log_access(username: str, filename: str):
     log_dir = "logs"

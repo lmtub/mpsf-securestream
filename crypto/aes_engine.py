@@ -1,10 +1,12 @@
 from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
 import base64
-import json
+from dotenv import load_dotenv
+load_dotenv()  
 import os
 import base64
-MASTER_KEY = b'mpsf-master-key12345678901234567'
+
+MASTER_KEY = os.environ.get("MASTER_KEY").encode()  # nếu dùng bytes cho AES
 
 # Sinh khóa AES ngẫu nhiên 256-bit (32 bytes)
 def generate_aes_key():
