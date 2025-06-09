@@ -5,8 +5,7 @@ import base64
 import jwt
 from datetime import datetime  
 from flask import render_template
-from crypto.utils import encrypt_key_with_master
-from crypto.aes_engine import encrypt_file, generate_aes_key, decrypt_file, decrypt_key_with_master
+from crypto.aes_engine import encrypt_file, generate_aes_key, decrypt_file, decrypt_key_with_master, encrypt_key_with_master
 import threading
 import time
 import mimetypes
@@ -35,7 +34,7 @@ def get_mimetype(filename):
 
 stream_bp = Blueprint("stream", __name__)
 
-SECRET_KEY = "mpsf-secret-key"  # Thay bằng secret thực tế của bạn
+SECRET_KEY = "mpsf-secret-key09876543211234567"
 
 def log_access(username: str, filename: str):
     log_dir = "logs"

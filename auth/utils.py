@@ -2,7 +2,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
 from datetime import datetime, timedelta
 
-SECRET_KEY = "mpsf-secret-key"
+SECRET_KEY = "mpsf-secret-key09876543211234567"
 
 def hash_password(password):
     return generate_password_hash(password)

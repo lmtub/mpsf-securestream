@@ -4,6 +4,8 @@ from stream.routes import stream_bp
 from creator.routes import creator_bp
 from admin.routes import admin_bp
 import os
+from flask import redirect
+
 
 def create_app():
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -16,7 +18,7 @@ def create_app():
     app.register_blueprint(admin_bp, url_prefix="/admin")
     @app.route("/")
     def home():
-        return "✅ MPSF SecureStream server is running!"
+        return redirect('/auth/login')
 
     return app
 

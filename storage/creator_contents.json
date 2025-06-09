@@ -1,90 +1,17 @@
 {
-  "unknown": [
-    {
-      "filename": "6623156875053.mp4",
-      "uploaded_at": "2025-06-06T16:56:45.440973"
-    },
-    {
-      "filename": "6623156875053.mp4",
-      "uploaded_at": "2025-06-06T17:02:00.201592"
-    },
-    {
-      "filename": "6637592458294.mp4",
-      "uploaded_at": "2025-06-06T17:07:40.210012"
-    }
-  ],
-  "quangthang2": [
-    {
-      "filename": "6637632710300.mp4",
-      "uploaded_at": "2025-06-06T17:15:04.775359"
-    }
-  ],
   "creator": [
     {
-      "filename": "6615648783956.mp4",
-      "uploaded_at": "2025-06-06T17:26:54.213503"
+      "filename": "Review_Phim_Tu_Hoc_Sinh_Gioi_Bi_Bat_Nat_Thanh_Chien_Binh_Hoc_uong_One_High_School_Heroes_2025.mp4",
+      "uploaded_at": "2025-06-08T16:23:35.973027",
+      "status": "approved",
+      "access": "public",
+      "approved_by": "admin"
     },
     {
       "filename": "1.mp4",
-      "uploaded_at": "2025-06-06T17:34:32.751650",
-      "status": "approved",
-      "access": "public",
-      "approved_by": "admin"
-    },
-    {
-      "filename": "6623156875053.mp4",
-      "uploaded_at": "2025-06-06T18:02:28.957630",
+      "uploaded_at": "2025-06-09T06:59:23.289404",
       "status": "approved",
       "access": "premium",
-      "approved_by": "admin"
-    },
-    {
-      "filename": "6637592458294.mp4",
-      "uploaded_at": "2025-06-06T18:25:04.554315",
-      "status": "approved",
-      "access": "public",
-      "approved_by": "admin"
-    },
-    {
-      "filename": "6637632710300.mp4",
-      "uploaded_at": "2025-06-06T18:37:53.992047",
-      "status": "approved",
-      "access": "public",
-      "approved_by": "admin"
-    },
-    {
-      "filename": "2.mp4",
-      "uploaded_at": "2025-06-06T18:45:07.307231",
-      "status": "approved",
-      "access": "public",
-      "approved_by": "admin"
-    },
-    {
-      "filename": "3.mp4",
-      "uploaded_at": "2025-06-06T19:00:49.499135",
-      "status": "approved",
-      "access": "public",
-      "approved_by": "admin"
-    },
-    {
-      "filename": "6637632710300.mp4",
-      "uploaded_at": "2025-06-06T19:38:34.742805",
-      "status": "approved",
-      "access": "public",
-      "approved_by": "admin"
-    },
-    {
-      "filename": "haha.mp4",
-      "uploaded_at": "2025-06-08T12:27:30.702516",
-      "status": "approved",
-      "access": "public",
-      "approved_by": "admin"
-    },
-    {
-      "filename": "hihi.mp4",
-      "uploaded_at": "2025-06-08T12:29:49.296977",
-      "status": "approved",
-      "access": "public",
       "approved_by": "admin"
     }
   ]
