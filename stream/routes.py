@@ -14,20 +14,30 @@ load_dotenv()
 from functools import wraps
 from flask import request, jsonify
 
+from flask import g, request, jsonify
+from functools import wraps
+
 def require_jwt(f):
     @wraps(f)
-    def decorated_function(*args, **kwargs):
+    def decorated(*args, **kwargs):
         token = None
         auth_header = request.headers.get("Authorization")
         if auth_header and auth_header.startswith("Bearer "):
             token = auth_header.split(" ")[1]
         else:
             token = request.cookies.get("token")
+
         if not token:
             return jsonify({"error": "Missing or invalid JWT"}), 401
-        # Có thể kiểm tra thêm verify_jwt(token) ở đây nếu muốn
+
+        payload = verify_jwt(token)
+        if not payload:
+            return jsonify({"error": "Invalid JWT"}), 401
+
+        g.payload = payload
         return f(*args, **kwargs)
-    return decorated_function
+    return decorated
+
 
 def get_mimetype(filename):
     mimetype, _ = mimetypes.guess_type(filename)
@@ -154,6 +164,7 @@ def download_decrypt(filename):
     # Giải mã file
     enc_path = os.path.join("storage", "encrypted_media", "enc_" + filename)
     dec_path = os.path.join(current_app.root_path, "tmp", "dec_" + filename)
+    print(f"[DEBUG] Giải mã lưu tại: {dec_path}")
 
     os.makedirs("tmp", exist_ok=True)
     print(f"[DEBUG] Tuyệt đối dec_path = {dec_path}")
@@ -170,21 +181,60 @@ def download_decrypt(filename):
     # Ghi log và gửi file
     log_access(username, filename)
 
-    @after_this_request
-    def cleanup(response):
-        def delayed_delete(path):
-            try:
-                time.sleep(120)  # chờ 5 giây để chắc chắn file đã stream xong
-                if os.path.exists(path):
-                    os.remove(path)
-                    print(f"[CLEANUP] Deleted: {path}")
-            except Exception as e:
-                print(f"[CLEANUP ERROR] {e}")
-
-        threading.Thread(target=delayed_delete, args=(dec_path,)).start()
-        return response
-
     return send_file(dec_path, mimetype=get_mimetype(filename), as_attachment=False)
+from flask import g
+
+@stream_bp.route("/api/get_key/<filename>")
+@require_jwt
+def get_key(filename):
+    payload = g.get("payload")
+    if not payload:
+        return jsonify({"error": "Không thể xác thực người dùng"}), 401
+
+    username = payload.get("username", "unknown")
+    role = payload.get("role", "user")
+
+    contents_path = os.path.join("storage", "creator_contents.json")
+    if not os.path.exists(contents_path):
+        return jsonify({"error": "Không tìm thấy dữ liệu nội dung"}), 404
+
+    with open(contents_path, "r") as f:
+        contents = json.load(f)
+
+    file_access = None
+    file_status = None
+    for uploads in contents.values():
+        for item in uploads:
+            if item["filename"] == filename:
+                file_access = item.get("access")
+                file_status = item.get("status")
+
+    if file_status != "approved":
+        return jsonify({"error": "Nội dung chưa được phê duyệt"}), 403
+
+    if file_access == "premium" and role not in ["premium", "admin"]:
+        return jsonify({"error": "Chỉ tài khoản premium hoặc admin được phép"}), 403
+
+    if file_access not in ["public", "premium"]:
+        return jsonify({"error": "Bạn không có quyền truy cập file này"}), 403
+
+    key_path = os.path.join("storage", "encrypted_keys.json")
+    if not os.path.exists(key_path):
+        return jsonify({"error": "Không tìm thấy key"}), 404
+
+    with open(key_path, "r") as f:
+        keys_data = json.load(f)
+
+    if filename not in keys_data:
+        return jsonify({"error": "Key không tồn tại"}), 404
+
+    key_info = keys_data[filename]
+    return jsonify({
+        "key_id": key_info["key_id"],
+        "key": key_info["key"]
+    })
+
+
 
 @stream_bp.route("/play/<filename>")
 @require_jwt

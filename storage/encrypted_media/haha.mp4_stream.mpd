@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Generated with https://github.com/shaka-project/shaka-packager version v3.4.2-c819dea-release-->
+<MPD xmlns="urn:mpeg:dash:schema:mpd:2011" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:mpeg:dash:schema:mpd:2011 DASH-MPD.xsd" xmlns:cenc="urn:mpeg:cenc:2013" profiles="urn:mpeg:dash:profile:isoff-on-demand:2011" minBufferTime="PT2S" type="static" mediaPresentationDuration="PT18.700001S">
+  <Period id="0">
+    <AdaptationSet id="0" contentType="audio" subsegmentStartsWithSAP="1" subsegmentAlignment="true">
+      <ContentProtection value="cenc" schemeIdUri="urn:mpeg:dash:mp4protection:2011" cenc:default_KID="c20e15c0-2e88-a50a-369f-cd559dd0d73b"/>
+      <ContentProtection schemeIdUri="urn:uuid:1077efec-c0b2-4d02-ace3-3c1e52e2fb4b">
+        <cenc:pssh>AAAANHBzc2gBAAAAEHfv7MCyTQKs4zweUuL7SwAAAAHCDhXALoilCjafzVWd0Nc7AAAAAA==</cenc:pssh>
+      </ContentProtection>
+      <Representation id="0" bandwidth="143000" codecs="mp4a.40.2" mimeType="audio/mp4" audioSamplingRate="44100">
+        <AudioChannelConfiguration schemeIdUri="urn:mpeg:dash:23003:3:audio_channel_configuration:2011" value="2"/>
+        <BaseURL>haha.mp4_audio.mp4</BaseURL>
+        <SegmentBase indexRange="1037-1116" timescale="44100">
+          <Initialization range="0-1036"/>
+        </SegmentBase>
+      </Representation>
+    </AdaptationSet>
+    <AdaptationSet id="1" contentType="video" width="720" height="1280" frameRate="15360/512" subsegmentAlignment="true" par="9:16">
+      <SupplementalProperty schemeIdUri="urn:mpeg:mpegB:cicp:TransferCharacteristics" value="1"/>
+      <ContentProtection value="cenc" schemeIdUri="urn:mpeg:dash:mp4protection:2011" cenc:default_KID="c20e15c0-2e88-a50a-369f-cd559dd0d73b"/>
+      <ContentProtection schemeIdUri="urn:uuid:1077efec-c0b2-4d02-ace3-3c1e52e2fb4b">
+        <cenc:pssh>AAAANHBzc2gBAAAAEHfv7MCyTQKs4zweUuL7SwAAAAHCDhXALoilCjafzVWd0Nc7AAAAAA==</cenc:pssh>
+      </ContentProtection>
+      <Representation id="1" bandwidth="1217397" codecs="avc1.64001f" mimeType="video/mp4" sar="1:1">
+        <BaseURL>haha.mp4_video.mp4</BaseURL>
+        <SegmentBase indexRange="1187-1266" timescale="15360">
+          <Initialization range="0-1186"/>
+        </SegmentBase>
+      </Representation>
+    </AdaptationSet>
+  </Period>
+</MPD>
