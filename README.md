@@ -3,6 +3,14 @@
 🚀 **SecureStream** là mô hình mô phỏng nền tảng phát nội dung số có bản quyền (phim, nhạc) với cơ chế bảo vệ toàn diện, kết hợp mã hóa hiện đại, DRM, và phân quyền người dùng.
 
 ---
+## Danh sách thành viên thực hiện
+
+| STT | MSSV     | Họ và tên            |
+|-----|----------|----------------------|
+| 1   | 23521398 | Lê Minh Tấn          |
+| 2   | 23521433 | Trần Viết Thắng      |
+| 3   | 23521425 | Nguyễn Quang Thắng   |
+---
 
 ## 🌐 **Tính năng nổi bật**
 
