@@ -5,9 +5,12 @@ import json
 from datetime import datetime
 from werkzeug.utils import secure_filename
 from auth.utils import decode_jwt
+import random
+import string
 
 creator_bp = Blueprint("creator", __name__)
 
+# Cấu hình
 ALLOWED_EXTENSIONS = {"mp4", "mp3"}
 UPLOAD_DIR = os.path.join("storage", "encrypted_media")
 KEY_FILE = os.path.join("storage", "encrypted_keys.json")
@@ -15,12 +18,19 @@ USER_CONTENT_FILE = os.path.join("storage", "creator_contents.json")
 
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
+# Hàm kiểm tra định dạng file hợp lệ
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+# Hàm tạo chuỗi ngẫu nhiên để ẩn tên file
+def random_string(length=12):
+    return ''.join(random.choices(string.ascii_lowercase + string.digits, k=length))
+
+# API Creator upload file
 @creator_bp.route("/upload", methods=["POST"])
 def upload_file():
     try:
+        # Kiểm tra file hợp lệ
         if "file" not in request.files:
             return jsonify({"error": "No file part"}), 400
 
@@ -31,13 +41,13 @@ def upload_file():
         if not allowed_file(file.filename):
             return jsonify({"error": "Định dạng file không hợp lệ"}), 400
 
-        filename = secure_filename(file.filename)
-        input_path = os.path.join("tmp", filename)
+        # Xử lý tên file
+        original_filename = secure_filename(file.filename)  # Tên thật, chỉ lưu cho quản lý
+        storage_name = random_string()  # Tên ngẫu nhiên để ẩn file trên server
+
+        input_path = os.path.join("tmp", original_filename)
         os.makedirs("tmp", exist_ok=True)
         file.save(input_path)
-
-        print(f"[DEBUG] tmp dir: {os.getcwd()}")
-        print(f"[DEBUG] input_path: {input_path}")
 
         if not os.path.exists(input_path):
             return jsonify({"error": "File tạm không lưu được"}), 500
@@ -46,37 +56,39 @@ def upload_file():
         key_id = os.urandom(16).hex()
         key = os.urandom(16).hex()
 
-        output_dir = UPLOAD_DIR
-        os.makedirs(output_dir, exist_ok=True)
-        output_mpd = os.path.join(output_dir, f"{filename}_stream.mpd")
-
+        # Chuẩn bị lệnh Packager, ẩn tên file output
+        output_mpd = os.path.join(UPLOAD_DIR, f"{storage_name}_stream.mpd")
         packager_cmd = r"C:\ffmpeg\bin\packager.exe"
 
         cmd = [
             packager_cmd,
-            f"in={input_path},stream=audio,output={output_dir}/{filename}_audio.mp4",
-            f"in={input_path},stream=video,output={output_dir}/{filename}_video.mp4",
+            f"in={input_path},stream=audio,output={UPLOAD_DIR}/{storage_name}_audio.mp4",
+            f"in={input_path},stream=video,output={UPLOAD_DIR}/{storage_name}_video.mp4",
             "--enable_raw_key_encryption",
-            f"--keys", f"label=:key_id={key_id}:key={key}",
+            "--keys", f"label=:key_id={key_id}:key={key}",
             f"--mpd_output={output_mpd}"
         ]
 
         subprocess.run(cmd, check=True)
         os.remove(input_path)
 
-        # Lưu key
+        # Lưu key vào file, theo tên ngẫu nhiên
         if os.path.exists(KEY_FILE):
             with open(KEY_FILE, "r") as f:
                 keys_data = json.load(f)
         else:
             keys_data = {}
 
-        keys_data[filename] = {"key_id": key_id, "key": key}
+        keys_data[storage_name] = {
+            "key_id": key_id,
+            "key": key,
+            "original_filename": original_filename
+        }
 
         with open(KEY_FILE, "w") as f:
             json.dump(keys_data, f, indent=2)
 
-        # Ghi metadata
+        # Lưu thông tin nội dung vào file quản lý
         token = request.cookies.get("token")
         username = "unknown"
         if token:
@@ -94,7 +106,8 @@ def upload_file():
             content_data[username] = []
 
         content_data[username].append({
-            "filename": filename,
+            "display_name": original_filename,  # Tên hiển thị trên dashboard
+            "storage_name": storage_name,       # Tên thực tế dùng phát video
             "uploaded_at": datetime.now().isoformat(),
             "status": "pending",
             "access": None

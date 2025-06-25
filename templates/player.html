@@ -2,10 +2,10 @@
 <video id="video" controls autoplay></video>
 
 <script>
-const filename = "{{ filename }}";
-const manifestUri = `/storage/encrypted_media/${filename}_stream.mpd`;
+const storageName = "{{ storage_name }}";  // Từ route /play/<storage_name>
+const manifestUri = `/media/${storageName}_stream.mpd`;  // Route đã bảo mật
 
-fetch(`/stream/api/get_key/${filename}`)
+fetch(`/stream/api/get_key/${storageName}`)
     .then(res => res.json())
     .then(data => {
         if (!data.key_id || !data.key) {

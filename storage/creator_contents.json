@@ -5,39 +5,59 @@
       "uploaded_at": "2025-06-08T16:23:35.973027",
       "status": "approved",
       "access": "public",
-      "approved_by": "admin"
+      "approved_by": "admin",
+      "display_name": "Review_Phim_Tu_Hoc_Sinh_Gioi_Bi_Bat_Nat_Thanh_Chien_Binh_Hoc_uong_One_High_School_Heroes_2025.mp4",
+      "storage_name": "r9ija29gahc7"
     },
     {
       "filename": "1.mp4",
       "uploaded_at": "2025-06-09T06:59:23.289404",
       "status": "approved",
       "access": "premium",
-      "approved_by": "admin"
+      "approved_by": "admin",
+      "display_name": "1.mp4",
+      "storage_name": "jkrxnla99yj5"
     },
     {
       "filename": "1.mp4",
       "uploaded_at": "2025-06-24T14:35:55.472752",
       "status": "approved",
       "access": "premium",
-      "approved_by": "admin"
+      "approved_by": "admin",
+      "display_name": "1.mp4",
+      "storage_name": "t3ea8gpdeah9"
     },
     {
       "filename": "3.mp4",
       "uploaded_at": "2025-06-24T14:41:16.893963",
       "status": "approved",
       "access": "public",
-      "approved_by": "admin"
+      "approved_by": "admin",
+      "display_name": "3.mp4",
+      "storage_name": "kjvcv8kxa9a4"
     },
     {
       "filename": "haha.mp4",
       "uploaded_at": "2025-06-24T14:43:29.234735",
       "status": "approved",
       "access": "public",
-      "approved_by": "admin"
+      "approved_by": "admin",
+      "display_name": "haha.mp4",
+      "storage_name": "dblfz6ymdvxx"
     },
     {
       "filename": "hihi.mp4",
       "uploaded_at": "2025-06-24T14:45:24.607692",
+      "status": "approved",
+      "access": "public",
+      "approved_by": "admin",
+      "display_name": "hihi.mp4",
+      "storage_name": "2ofgse9k0c63"
+    },
+    {
+      "display_name": "77.mp4",
+      "storage_name": "g3wrpu27aso4",
+      "uploaded_at": "2025-06-25T16:22:12.631310",
       "status": "approved",
       "access": "public",
       "approved_by": "admin"

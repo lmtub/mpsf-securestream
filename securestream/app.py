@@ -1,5 +1,5 @@
 import os
-from flask import Flask, redirect, send_from_directory
+from flask import Flask, redirect, send_from_directory, abort
 
 # Đường dẫn thư mục gốc dự án (mpsf-securestream)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -31,11 +31,24 @@ def create_app():
     def home():
         return redirect("/auth/login")
 
-    # Route phục vụ file trong storage/encrypted_media
+    # Route phục vụ file trong storage/encrypted_media cũ (giữ lại nếu cần)
     @app.route("/storage/encrypted_media/<path:filename>")
     def encrypted_media(filename):
         media_dir = os.path.join(BASE_DIR, "storage", "encrypted_media")
         print(f"[DEBUG] Trả file từ: {media_dir}\\{filename}")
+        return send_from_directory(media_dir, filename)
+
+    # Route phục vụ file ẩn tên thật, dùng storage_name
+    @app.route("/media/<path:filename>")
+    def serve_media(filename):
+        media_dir = os.path.join(BASE_DIR, "storage", "encrypted_media")
+        file_path = os.path.join(media_dir, filename)
+
+        if not os.path.exists(file_path):
+            print(f"[LỖI] Không tìm thấy file: {file_path}")
+            return abort(404)
+
+        print(f"[DEBUG] Phục vụ file: {file_path}")
         return send_from_directory(media_dir, filename)
 
     return app
