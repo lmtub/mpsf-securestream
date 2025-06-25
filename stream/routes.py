@@ -1,202 +1,72 @@
-from flask import Blueprint, request, send_file, jsonify, current_app, after_this_request
+from flask import Blueprint, request, send_file, jsonify, current_app, render_template, g
 import os
 import json
 import base64
 import jwt
 from datetime import datetime  
-from flask import render_template
-from crypto.aes_engine import encrypt_file, generate_aes_key, decrypt_file, decrypt_key_with_master, encrypt_key_with_master
-import threading
-import time
 import mimetypes
 from dotenv import load_dotenv
+from crypto.aes_engine import encrypt_file, generate_aes_key, decrypt_file, decrypt_key_with_master, encrypt_key_with_master
+from functools import wraps
+
 load_dotenv()
-from functools import wraps
-from flask import request, jsonify
-
-from flask import g, request, jsonify
-from functools import wraps
-
-def require_jwt(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        token = None
-        auth_header = request.headers.get("Authorization")
-        if auth_header and auth_header.startswith("Bearer "):
-            token = auth_header.split(" ")[1]
-        else:
-            token = request.cookies.get("token")
-
-        if not token:
-            return jsonify({"error": "Missing or invalid JWT"}), 401
-
-        payload = verify_jwt(token)
-        if not payload:
-            return jsonify({"error": "Invalid JWT"}), 401
-
-        g.payload = payload
-        return f(*args, **kwargs)
-    return decorated
-
-
-def get_mimetype(filename):
-    mimetype, _ = mimetypes.guess_type(filename)
-    return mimetype or "application/octet-stream"
 
 stream_bp = Blueprint("stream", __name__)
 
 SECRET_KEY = os.environ.get("SECRET_KEY")
 
-def log_access(username: str, filename: str):
-    log_dir = "logs"
-    os.makedirs(log_dir, exist_ok=True)
-    with open(os.path.join(log_dir, "access.log"), "a", encoding="utf-8") as f:
-        f.write(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] {username} accessed {filename}\n")
+# Giúp Flask đoán định dạng file trả về
+def get_mimetype(filename):
+    mimetype, _ = mimetypes.guess_type(filename)
+    return mimetype or "application/octet-stream"
 
-def verify_jwt(token):
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-        return payload
-    except Exception:
-        return None
+# Middleware kiểm tra JWT
+def require_jwt(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.cookies.get("token") or None
+        auth_header = request.headers.get("Authorization")
+        if auth_header and auth_header.startswith("Bearer "):
+            token = auth_header.split(" ")[1]
 
-@stream_bp.route("/test", methods=["GET"])
+        if not token:
+            return jsonify({"error": "Thiếu hoặc sai JWT"}), 401
+
+        try:
+            payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        except Exception:
+            return jsonify({"error": "JWT không hợp lệ"}), 401
+
+        g.payload = payload
+        return f(*args, **kwargs)
+    return decorated
+
+# Ghi log truy cập file
+def log_access(username, storage_name):
+    os.makedirs("logs", exist_ok=True)
+    with open("logs/access.log", "a", encoding="utf-8") as f:
+        f.write(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] {username} accessed {storage_name}\n")
+
+# Test module
+@stream_bp.route("/test")
 def test_stream():
     return jsonify({"message": "Stream module active!"})
 
-@stream_bp.route("/encrypt", methods=["POST"])
-def encrypt_upload():
-    if "file" not in request.files:
-        return jsonify({"error": "No file part"}), 400
-
-    file = request.files["file"]
-    if file.filename == "":
-        return jsonify({"error": "No selected file"}), 400
-
-    input_path = os.path.join("tmp", file.filename)
-    os.makedirs("tmp", exist_ok=True)
-    file.save(input_path)
-
-    key = generate_aes_key()
-    output_path = os.path.join("tmp", "enc_" + file.filename)
-    encrypt_info = encrypt_file(input_path, output_path, key)
-
-    encrypted_key_str = encrypt_key_with_master(key)
-
-    # Lưu key vào encrypted_keys.json (ví dụ đơn giản, thực tế nên mã hóa key)
-    keys_path = os.path.join("tmp", "encrypted_keys.json")
-    keys_data = {}
-    if os.path.exists(keys_path):
-        with open(keys_path, "r") as f:
-            keys_data = json.load(f)
-    keys_data[file.filename] = base64.b64encode(key).decode()
-    with open(keys_path, "w") as f:
-        json.dump(keys_data, f)
-
-    with open(output_path, "rb") as f:
-        encrypted_data = f.read()
-
-    return jsonify({
-        "encrypted_file": encrypted_data.hex(),
-        "key": key.hex(),
-        "nonce": encrypt_info["nonce"],
-        "tag": encrypt_info["tag"]
-    })
-
-@stream_bp.route("/download/<filename>", methods=["GET"])
+# Trang phát video, chỉ nhận storage_name
+@stream_bp.route("/play/<storage_name>")
 @require_jwt
-def download_decrypt(filename):
-    # Lấy JWT từ header hoặc cookie
-    auth_header = request.headers.get("Authorization")
-    if auth_header and auth_header.startswith("Bearer "):
-        token = auth_header.split(" ")[1]
-    else:
-        token = request.cookies.get("token")
+def play_video(storage_name):
+    return render_template("player.html", storage_name=storage_name)
 
-    if not token:
-        return jsonify({"error": "Missing or invalid JWT"}), 401
-
-    payload = verify_jwt(token)
-    if not payload:
-        return jsonify({"error": "Invalid JWT"}), 401
-
-    user_role = payload.get("role", "user") 
-    username = payload.get("username", "unknown")
-
-    # Kiểm tra quyền truy cập từ creator_contents.json
-    access_file = os.path.join("storage", "creator_contents.json")
-    file_access = None
-
-    if os.path.exists(access_file):
-        with open(access_file, "r", encoding="utf-8") as f:
-            creator_data = json.load(f)
-            for creator, uploads in creator_data.items():
-                for item in uploads:
-                    if item.get("filename") == filename:
-                        file_access = item.get("access", "private")
-
-    # Quy định phân quyền truy cập
-    if file_access == "public":
-        pass  # ai cũng truy cập được
-    elif file_access == "premium":
-        if user_role not in ["premium", "admin"]:
-            return jsonify({"error": "Chỉ tài khoản premium hoặc admin mới xem được file này."}), 403
-    elif file_access is None:
-        return jsonify({"error": "Không tìm thấy quyền truy cập file."}), 404
-    else:
-        return jsonify({"error": "Bạn không có quyền truy cập file này."}), 403
-
-    # Đọc AES key đã mã hóa
-    key_path = os.path.join("storage", "encrypted_keys.json")
-    if not os.path.exists(key_path):
-        return jsonify({"error": "Key file not found"}), 404
-
-    with open(key_path, "r") as f:
-        keys_data = json.load(f)
-
-    key_id = "enc_" + filename
-    if key_id not in keys_data:
-        return jsonify({"error": f"Key for file '{key_id}' not found"}), 404
-
-    encrypted_key_str = keys_data[key_id]
-    key = decrypt_key_with_master(encrypted_key_str)
-
-    # Giải mã file
-    enc_path = os.path.join("storage", "encrypted_media", "enc_" + filename)
-    dec_path = os.path.join(current_app.root_path, "tmp", "dec_" + filename)
-    print(f"[DEBUG] Giải mã lưu tại: {dec_path}")
-
-    os.makedirs("tmp", exist_ok=True)
-    print(f"[DEBUG] Tuyệt đối dec_path = {dec_path}")
-    if not os.path.exists(enc_path):
-        return jsonify({"error": "Encrypted file not found"}), 404
-
-    try:
-        decrypt_file(enc_path, dec_path, key)
-    except Exception as e:
-        return jsonify({"error": f"Decryption failed: {str(e)}"}), 500
-
-    if not os.path.exists(dec_path):
-        return jsonify({"error": "Decryption failed or output file missing"}), 500
-    # Ghi log và gửi file
-    log_access(username, filename)
-
-    return send_file(dec_path, mimetype=get_mimetype(filename), as_attachment=False)
-from flask import g
-
-@stream_bp.route("/api/get_key/<filename>")
+# Lấy Key giải mã video, ẩn hoàn toàn tên thật
+@stream_bp.route("/api/get_key/<storage_name>")
 @require_jwt
-def get_key(filename):
-    payload = g.get("payload")
-    if not payload:
-        return jsonify({"error": "Không thể xác thực người dùng"}), 401
-
-    username = payload.get("username", "unknown")
-    role = payload.get("role", "user")
+def get_key(storage_name):
+    role = g.payload.get("role", "user")
 
     contents_path = os.path.join("storage", "creator_contents.json")
     if not os.path.exists(contents_path):
-        return jsonify({"error": "Không tìm thấy dữ liệu nội dung"}), 404
+        return jsonify({"error": "Không tìm thấy dữ liệu"}), 404
 
     with open(contents_path, "r") as f:
         contents = json.load(f)
@@ -205,38 +75,86 @@ def get_key(filename):
     file_status = None
     for uploads in contents.values():
         for item in uploads:
-            if item["filename"] == filename:
+            if item["storage_name"] == storage_name:
                 file_access = item.get("access")
                 file_status = item.get("status")
 
     if file_status != "approved":
-        return jsonify({"error": "Nội dung chưa được phê duyệt"}), 403
-
+        return jsonify({"error": "Nội dung chưa được duyệt"}), 403
     if file_access == "premium" and role not in ["premium", "admin"]:
-        return jsonify({"error": "Chỉ tài khoản premium hoặc admin được phép"}), 403
-
+        return jsonify({"error": "Chỉ tài khoản premium hoặc admin có quyền"}), 403
     if file_access not in ["public", "premium"]:
-        return jsonify({"error": "Bạn không có quyền truy cập file này"}), 403
+        return jsonify({"error": "Bạn không có quyền truy cập"}), 403
 
     key_path = os.path.join("storage", "encrypted_keys.json")
     if not os.path.exists(key_path):
-        return jsonify({"error": "Không tìm thấy key"}), 404
+        return jsonify({"error": "Không tìm thấy khoá"}), 404
 
     with open(key_path, "r") as f:
         keys_data = json.load(f)
 
-    if filename not in keys_data:
+    if storage_name not in keys_data:
         return jsonify({"error": "Key không tồn tại"}), 404
 
-    key_info = keys_data[filename]
+    key_info = keys_data[storage_name]
     return jsonify({
         "key_id": key_info["key_id"],
         "key": key_info["key"]
     })
 
-
-
-@stream_bp.route("/play/<filename>")
+# Tải và giải mã video, không lộ tên thật
+@stream_bp.route("/download/<storage_name>")
 @require_jwt
-def play_video(filename):
-    return render_template("player.html", filename=filename)
+def download_decrypt(storage_name):
+    payload = g.payload
+    username = payload.get("username", "unknown")
+    role = payload.get("role", "user")
+
+    contents_path = os.path.join("storage", "creator_contents.json")
+    file_access = None
+
+    if os.path.exists(contents_path):
+        with open(contents_path, "r", encoding="utf-8") as f:
+            contents = json.load(f)
+            for uploads in contents.values():
+                for item in uploads:
+                    if item.get("storage_name") == storage_name:
+                        file_access = item.get("access", "private")
+
+    if file_access == "public":
+        pass
+    elif file_access == "premium":
+        if role not in ["premium", "admin"]:
+            return jsonify({"error": "Chỉ premium hoặc admin được phép"}), 403
+    elif file_access is None:
+        return jsonify({"error": "Không tìm thấy quyền truy cập file"}), 404
+    else:
+        return jsonify({"error": "Bạn không có quyền truy cập"}), 403
+
+    key_path = os.path.join("storage", "encrypted_keys.json")
+    if not os.path.exists(key_path):
+        return jsonify({"error": "Key không tồn tại"}), 404
+
+    with open(key_path, "r") as f:
+        keys_data = json.load(f)
+
+    if storage_name not in keys_data:
+        return jsonify({"error": "Không tìm thấy key cho file này"}), 404
+
+    key_info = keys_data[storage_name]
+    key = decrypt_key_with_master(key_info["key"])
+
+    enc_path = os.path.join("storage", "encrypted_media", f"enc_{storage_name}")
+    dec_path = os.path.join(current_app.root_path, "tmp", f"dec_{storage_name}")
+
+    os.makedirs("tmp", exist_ok=True)
+    if not os.path.exists(enc_path):
+        return jsonify({"error": "File mã hoá không tồn tại"}), 404
+
+    try:
+        decrypt_file(enc_path, dec_path, key)
+    except Exception as e:
+        return jsonify({"error": f"Giải mã thất bại: {str(e)}"}), 500
+
+    log_access(username, storage_name)
+    return send_file(dec_path, mimetype=get_mimetype(storage_name), as_attachment=False)

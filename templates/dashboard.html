@@ -20,8 +20,8 @@
         <ul class="list-group">
             {% for f in public_files %}
                 <li class="list-group-item d-flex justify-content-between align-items-center">
-                    {{ f }}
-                    <a href="{{ url_for('stream.play_video', filename=f) }}" class="btn btn-sm btn-outline-primary">Play</a>
+                    {{ f.display_name }}
+                    <a href="{{ url_for('stream.play_video', storage_name=f.storage_name) }}" class="btn btn-sm btn-outline-primary">Play</a>
                 </li>
             {% endfor %}
         </ul>
@@ -31,8 +31,8 @@
         <ul class="list-group mb-4">
             {% for f in public_files %}
                 <li class="list-group-item d-flex justify-content-between align-items-center">
-                    {{ f }}
-                    <a href="{{ url_for('stream.play_video', filename=f) }}" class="btn btn-sm btn-outline-primary">Play</a>
+                    {{ f.display_name }}
+                    <a href="{{ url_for('stream.play_video', storage_name=f.storage_name) }}" class="btn btn-sm btn-outline-primary">Play</a>
                 </li>
             {% endfor %}
         </ul>
@@ -41,8 +41,8 @@
         <ul class="list-group">
             {% for f in premium_files %}
                 <li class="list-group-item d-flex justify-content-between align-items-center">
-                    {{ f }}
-                    <a href="{{ url_for('stream.play_video', filename=f) }}" class="btn btn-sm btn-outline-warning">Play</a>
+                    {{ f.display_name }}
+                    <a href="{{ url_for('stream.play_video', storage_name=f.storage_name) }}" class="btn btn-sm btn-outline-warning">Play</a>
                 </li>
             {% else %}
                 <li class="list-group-item">No premium videos.</li>
@@ -61,7 +61,10 @@
         <h4>📄 My Uploaded Files:</h4>
         <ul class="list-group" id="my-content">
             {% for f in uploaded_files %}
-                <li class="list-group-item">{{ f }}</li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {{ f.display_name }}
+                    <span class="badge bg-secondary">{{ f.status }}</span>
+                </li>
             {% else %}
                 <li class="list-group-item">No files uploaded yet.</li>
             {% endfor %}
@@ -72,10 +75,10 @@
 
         <h4>📂 Pending Content</h4>
         <ul class="list-group mb-4" id="pending-list">
-            {% for filename in pending_files %}
+            {% for f in pending_files %}
                 <li class="list-group-item d-flex justify-content-between align-items-center">
-                    {{ filename }}
-                    <form action="/admin/approve/{{ filename }}" method="post" class="d-flex gap-2 align-items-center">
+                    {{ f.display_name }}
+                    <form action="/admin/approve/{{ f.storage_name }}" method="post" class="d-flex gap-2 align-items-center">
                         <select name="access" class="form-select form-select-sm" required>
                             <option value="public">Public</option>
                             <option value="premium">Premium</option>
