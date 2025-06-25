@@ -38,7 +38,7 @@
 ## ⚙️ **Cài đặt và chạy thử**
 
 ```bash
-git clone https://github.com/your-username/securestream.git
+git clone https://github.com/lmtub/mpsf-securestream.git
 cd securestream
 pip install -r requirements.txt
 python app.py
