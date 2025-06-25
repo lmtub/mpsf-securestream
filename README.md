@@ -41,4 +41,4 @@
 git clone https://github.com/lmtub/mpsf-securestream.git
 cd securestream
 pip install -r requirements.txt
-python app.py
+python -m securestream.app
