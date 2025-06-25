@@ -1,3 +1,4 @@
+
 # SecureStream - Multimedia Secure Streaming Platform
 
 🚀 **SecureStream** là mô hình mô phỏng nền tảng phát nội dung số có bản quyền (phim, nhạc) với cơ chế bảo vệ toàn diện, kết hợp mã hóa hiện đại, DRM, và phân quyền người dùng.
@@ -10,6 +11,7 @@
 | 1   | 23521398 | Lê Minh Tấn          |
 | 2   | 23521433 | Trần Viết Thắng      |
 | 3   | 23521425 | Nguyễn Quang Thắng   |
+
 ---
 
 ## 🌐 **Tính năng nổi bật**
@@ -35,10 +37,82 @@
 
 ---
 
-## ⚙️ **Cài đặt và chạy thử**
+## ⚙️ Cài đặt và chạy thử
+
+### Bước 1: Chuẩn bị môi trường
+
+- Yêu cầu:
+  - Python 3.10+
+  - FFmpeg (đã cài và cấu hình PATH)
+  - Shaka Packager (đã cài và cấu hình PATH)
+
+---
+
+### Bước 2: Cài đặt FFmpeg
+
+**Cách 1:** Truy cập [https://www.gyan.dev/ffmpeg/builds/](https://www.gyan.dev/ffmpeg/builds/)  
+Tải bản:  
+✔️ `ffmpeg-release-full.zip` hoặc `ffmpeg-release-full.7z`  
+
+Giải nén vào `C:\ffmpeg`  
+Thêm `C:\ffmpeg\bin` vào biến môi trường `PATH`
+
+**Cách 2:** Dùng Winget trên PowerShell:
+
+```powershell
+winget install ffmpeg
+```
+
+Hoặc bản đầy đủ:
+
+```powershell
+winget install "FFmpeg (Essentials Build)"
+```
+
+Kiểm tra:
+
+```powershell
+ffmpeg -version
+```
+
+---
+
+### Bước 3: Cài đặt Shaka Packager
+
+- Tải từ: [https://github.com/shaka-project/shaka-packager/releases](https://github.com/shaka-project/shaka-packager/releases)  
+
+Đổi tên và di chuyển:
+
+```powershell
+Rename-Item .\packager-win-x64.exe packager.exe
+Move-Item .\packager.exe C:\ffmpeg\bin
+```
+
+Kiểm tra:
+
+```powershell
+packager --version
+```
+
+---
+
+### Bước 4: Cài đặt và chạy dự án SecureStream
 
 ```bash
 git clone https://github.com/lmtub/mpsf-securestream.git
-cd securestream
+cd mpsf-securestream
 pip install -r requirements.txt
 python -m securestream.app
+```
+
+Truy cập hệ thống tại: [http://localhost:5000](http://localhost:5000)  
+
+---
+
+### ✅ Kiểm tra nhanh
+
+- Phát nội dung thử nghiệm trên trình duyệt.
+- Quan sát console log: `"Phát thành công"`.
+- Backend chỉ cấp key hợp lệ khi người dùng đủ quyền.
+
+---
